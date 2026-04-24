@@ -1,94 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced Image Compressor</title>
+function processImages() {
+  const files = document.getElementById("upload").files;
 
-<style>
-body {
-  font-family: Arial;
-  background: #f0f2f5;
-  text-align: center;
+  if (!files.length) {
+    alert("Please select at least one image");
+    return;
+  }
+
+  const format = document.getElementById("format").value;
+  const quality = document.getElementById("quality").value;
+  const width = document.getElementById("width").value;
+  const height = document.getElementById("height").value;
+
+  const output = document.getElementById("output");
+  output.innerHTML = "";
+
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const img = new Image();
+      img.src = e.target.result;
+
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        let newWidth = width || img.width;
+        let newHeight = height || img.height;
+
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+        const data = canvas.toDataURL(format, quality);
+
+        const preview = document.createElement("img");
+        preview.src = data;
+
+        const link = document.createElement("a");
+        link.href = data;
+        link.download = "converted-image";
+        link.innerText = "Download";
+
+        output.appendChild(preview);
+        output.appendChild(link);
+        output.appendChild(document.createElement("hr"));
+      };
+    };
+
+    reader.readAsDataURL(file);
+  });
 }
-
-.container {
-  background: white;
-  padding: 20px;
-  margin: 20px auto;
-  width: 90%;
-  max-width: 500px;
-  border-radius: 10px;
-}
-
-.drop {
-  border: 2px dashed #aaa;
-  padding: 20px;
-  margin: 10px 0;
-}
-
-img {
-  max-width: 100%;
-  margin-top: 10px;
-}
-
-button {
-  padding: 10px;
-  margin-top: 10px;
-  width: 100%;
-  background: #007bff;
-  color: white;
-  border: none;
-}
-</style>
-
-</head>
-<body>
-
-<div class="container">
-  <h2>Advanced Image Tool</h2>
-
-  <div class="drop" id="dropArea">
-    Drag & Drop Images Here
-    <br>
-    <input type="file" id="upload" multiple accept="image/*">
-  </div>
-
-  <p>Quality: <span id="q">0.7</span></p>
-  <input type="range" id="quality" min="0.1" max="1" step="0.1" value="0.7">
-
-  <p>Format:</p>
-  <select id="format">
-    <option value="image/jpeg">JPG</option>
-    <option value="image/png">PNG</option>
-    <option value="image/webp">WebP</option>
-  </select>
-
-  <p>Resize (optional)</p>
-  <input type="number" id="width" placeholder="Width">
-  <input type="number" id="height" placeholder="Height">
-
-  <button onclick="processImages()">Process Images</button>
-
-  <div id="output"></div>
-</div>
-
-<script>
-const quality = document.getElementById("quality");
-const qText = document.getElementById("q");
-
-quality.oninput = () => qText.innerText = quality.value;
-
-const dropArea = document.getElementById("dropArea");
-
-dropArea.ondragover = e => {
-  e.preventDefault();
-  dropArea.style.background = "#eee";
-};
-
-dropArea.ondragleave = () => {
-  dropArea.style.background = "white";
-};
-
-dropArea.ondrop = e => {
-  e.preventDefault();
