@@ -1,0 +1,57 @@
+function processImages() 
+{
+  const input = document.getElementById("upload");
+
+  if (!input.files || input.files.length === 0) {
+    alert("Please select an image first");
+    return;
+  }
+
+  const files = input.files;
+  const format = document.getElementById("format").value;
+  const quality = parseFloat(document.getElementById("quality").value);
+  const width = document.getElementById("width").value;
+  const height = document.getElementById("height").value;
+
+  const output = document.getElementById("output");
+  output.innerHTML = "";
+
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const img = new Image();
+      img.src = e.target.result;
+
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        let newWidth = width ? parseInt(width) : img.width;
+        let newHeight = height ? parseInt(height) : img.height;
+
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+        const data = canvas.toDataURL(format, quality);
+
+        const preview = document.createElement("img");
+        preview.src = data;
+
+        const link = document.createElement("a");
+        link.href = data;
+        link.download = "compressed-image";
+        link.innerText = "Download Image";
+
+        output.appendChild(preview);
+        output.appendChild(link);
+        output.appendChild(document.createElement("hr"));
+      };
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
